@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Modality Selector</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --ink: #1f2a44;
+    --ink-soft: #54607a;
+    --mute: #8b93a3;
+    --line: #eaedf3;
+    --fill: #f1f4f8;
+    --fill-empty: #f7f9fb;
+    --sans: ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --sh: 0 1px 2px rgba(31,42,68,.04), 0 7px 22px rgba(31,42,68,.07);
+    --sh-sel: 0 2px 5px rgba(31,42,68,.07), 0 12px 30px rgba(31,42,68,.13);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 14px; }
+
+  /* Comparison tool */
+  .panel { background: #fff; border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--sh); padding: 18px; margin-bottom: 20px; }
+  .panel-body { display: grid; grid-template-columns: minmax(320px, 1fr) minmax(238px, 332px); gap: 16px; align-items: center; }
+  .chart-cell { min-width: 0; width: 100%; }
+  #compareChart svg { display: block; }
+
+  .slot { border-radius: 16px; height: 274px; overflow: hidden; padding: 15px 17px; }
+  .slot + .slot { margin-top: 13px; }
+  .slot.filled { background: var(--fill); border: 3px solid var(--c); }
+  .slot.empty { background: var(--fill-empty); border: 1px dashed #d7dce6; display: flex; flex-direction: column; justify-content: center; }
+  .slot-label { font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 6px; }
+  .slot-hint { font-size: 13px; color: var(--mute); line-height: 1.5; }
+
+  .mod-name { font-size: 16px; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 11px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  tr { border-top: 1px solid rgba(31,42,68,0.07); }
+  tr:first-child { border-top: 0; }
+  td.k { font-size: 10px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--mute); padding: 5px 10px 5px 0; white-space: nowrap; vertical-align: top; }
+  td.v { font-size: 12.5px; color: var(--ink-soft); padding: 5px 0; line-height: 1.35; font-weight: 500; text-align: right; }
+
+  /* Modality cards */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 14px; }
+  .card { background: #fff; border: 3px solid var(--c); border-radius: 16px; box-shadow: var(--sh); cursor: pointer; padding: 12px 13px 11px; transition: box-shadow .14s, transform .1s, background .14s; }
+  .card:hover { box-shadow: var(--sh-sel); transform: translateY(-1px); }
+  .card.sel { box-shadow: var(--sh-sel); background: color-mix(in srgb, var(--c) 8%, #fff); }
+  .card-name { font-size: 13.5px; font-weight: 800; letter-spacing: -0.2px; margin-bottom: 6px; }
+  .chart-mini { width: 100%; display: block; }
+
+  @media (max-width: 680px) {
+    .panel-body { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="panel">
+    <div class="panel-body">
+      <div class="chart-cell"><div id="compareChart"></div></div>
+      <div id="compareInfo"></div>
+    </div>
+  </div>
+
+  <div class="grid" id="cardGrid"></div>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var AXES = [
+    { key: "res",     short: "Resolution" },
+    { key: "section", short: "Sectioning" },
+    { key: "speed",   short: "Speed" },
+    { key: "sens",    short: "Sensitivity" },
+    { key: "gentle",  short: "Gentleness" },
+    { key: "depth",   short: "Depth" },
+    { key: "fov",     short: "Field of view" }
+  ];
+
+  var MODALITIES = [
+    {
+      id: "wf", name: "Widefield epifluorescence", short: "Widefield", color: "#1a7fd6",
+      scores: { res: 5, section: 1, speed: 9, sens: 8, gentle: 7, depth: 2, fov: 8 },
+      specs: {
+        "Resolution": "~250 nm (diffraction limited)",
+        "Sectioning": "None — whole sample lit",
+        "Speed": "&gt;50 fps full frame",
+        "Sensitivity": "sCMOS, QE ~95%",
+        "Gentleness": "Low dose per plane",
+        "Depth": "Thin samples only",
+        "Field of view": "Large, low-mag tiling"
+      }
+    },
+    {
+      id: "sd", name: "Spinning disc confocal", short: "Spinning disc", color: "#109d63",
+      scores: { res: 6, section: 7, speed: 8, sens: 7, gentle: 8, depth: 4, fov: 5 },
+      specs: {
+        "Resolution": "~250 nm (diffraction limited)",
+        "Sectioning": "Good — pinhole array",
+        "Speed": "Fast live volumes",
+        "Sensitivity": "sCMOS, slight pinhole loss",
+        "Gentleness": "Low dose, efficient",
+        "Depth": "Moderate in thick tissue",
+        "Field of view": "Moderate field"
+      }
+    },
+    {
+      id: "pc", name: "Point-scanning confocal", short: "Point confocal", color: "#7b3fe4",
+      scores: { res: 6, section: 9, speed: 3, sens: 5, gentle: 3, depth: 5, fov: 5 },
+      specs: {
+        "Resolution": "~200 nm; tunable pinhole",
+        "Sectioning": "Excellent — tight pinhole",
+        "Speed": "Galvo; slow (resonant faster)",
+        "Sensitivity": "PMT / HyD, pinhole losses",
+        "Gentleness": "High peak-intensity dwell",
+        "Depth": "Good with longer wavelengths",
+        "Field of view": "Zoomable; tiling is slow"
+      }
+    },
+    {
+      id: "mp", name: "Multiphoton (two-photon)", short: "Multiphoton", color: "#0aa6b8",
+      scores: { res: 4, section: 8, speed: 3, sens: 5, gentle: 5, depth: 9, fov: 5 },
+      specs: {
+        "Resolution": "~400–500 nm (long-λ excitation)",
+        "Sectioning": "Intrinsic; broader axial PSF",
+        "Speed": "Galvo scanning, slow",
+        "Sensitivity": "Non-descanned; deep signal",
+        "Gentleness": "Localised; high peak power",
+        "Depth": "Deep — ~0.5–1 mm in tissue",
+        "Field of view": "Scan field; tiling for area"
+      }
+    },
+    {
+      id: "sted", name: "STED super-resolution", short: "STED", color: "#d92b86",
+      scores: { res: 10, section: 8, speed: 3, sens: 4, gentle: 2, depth: 3, fov: 3 },
+      specs: {
+        "Resolution": "30–70 nm (sub-diffraction)",
+        "Sectioning": "Excellent",
+        "Speed": "Scanned, slow",
+        "Sensitivity": "Reduced — small PSF",
+        "Gentleness": "Very high dose (depletion)",
+        "Depth": "Limited; thin samples",
+        "Field of view": "Small, high-mag field"
+      }
+    },
+    {
+      id: "lsfm", name: "Lightsheet (cleared / live)", short: "Lightsheet", color: "#ef8a07",
+      scores: { res: 5, section: 9, speed: 9, sens: 9, gentle: 10, depth: 7, fov: 9 },
+      specs: {
+        "Resolution": "~300–500 nm (objective dep.)",
+        "Sectioning": "Excellent — plane illumination",
+        "Speed": "Fast large volumes",
+        "Sensitivity": "Very low background",
+        "Gentleness": "Only focal plane lit — gentlest",
+        "Depth": "Large; deep when cleared",
+        "Field of view": "Large; whole-volume capture"
+      }
+    },
+    {
+      id: "lls", name: "Lattice lightsheet (3i)", short: "Lattice lightsheet", color: "#4f46e5",
+      scores: { res: 5, section: 10, speed: 9, sens: 9, gentle: 10, depth: 2, fov: 3 },
+      specs: {
+        "Resolution": "~230–300 nm (diffraction limited)",
+        "Sectioning": "Exceptional — thinnest sheet",
+        "Speed": "Fast 4D live volumes",
+        "Sensitivity": "Very low background",
+        "Gentleness": "Extremely low phototoxicity",
+        "Depth": "Small samples near coverslip",
+        "Field of view": "Small; subcellular volumes"
+      }
+    },
+    {
+      id: "tirf", name: "TIRF", short: "TIRF", color: "#e23b2e",
+      scores: { res: 6, section: 10, speed: 9, sens: 9, gentle: 8, depth: 1, fov: 3 },
+      specs: {
+        "Resolution": "~200 nm lateral",
+        "Sectioning": "~100 nm evanescent (best axial)",
+        "Speed": "Very fast (camera)",
+        "Sensitivity": "Single-molecule, near-zero bg",
+        "Gentleness": "Thin surface layer only",
+        "Depth": "~100 nm — surface ONLY",
+        "Field of view": "Small, high-NA field"
+      }
+    }
+  ];
+
+  function polar(cx, cy, r, deg) { var a = deg * Math.PI / 180; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; }
+
+  function radarSVG(series, big) {
+    var N = AXES.length, max = 10;
+    var g = big ? { w: 460, h: 408, cx: 230, cy: 204, r: 134 } : { w: 168, h: 150, cx: 84, cy: 75, r: 56 };
+    var angle = function (i) { return -90 + i * 360 / N; };
+    var pt = function (i, v) { return polar(g.cx, g.cy, g.r * v / max, angle(i)); };
+
+    var s = '<svg viewBox="0 0 ' + g.w + ' ' + g.h + '" width="100%" preserveAspectRatio="xMidYMid meet">';
+    var levels = big ? [2, 4, 6, 8, 10] : [3.33, 6.66, 10];
+    levels.forEach(function (l) {
+      var pts = AXES.map(function (_, i) { return pt(i, l).join(","); }).join(" ");
+      s += '<polygon points="' + pts + '" fill="none" stroke="#eaedf3" stroke-width="1.2"/>';
+    });
+    AXES.forEach(function (_, i) {
+      var p = pt(i, 10);
+      s += '<line x1="' + g.cx + '" y1="' + g.cy + '" x2="' + p[0] + '" y2="' + p[1] + '" stroke="#eef1f6" stroke-width="1.2"/>';
+    });
+    series.forEach(function (se) {
+      var pts = AXES.map(function (a, i) { return pt(i, se.scores[a.key]).join(","); }).join(" ");
+      s += '<polygon points="' + pts + '" fill="' + se.color + '" fill-opacity="0.15" stroke="' + se.color + '" stroke-width="2.6" stroke-linejoin="round"/>';
+      if (big) AXES.forEach(function (a, i) { var p = pt(i, se.scores[a.key]); s += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="3.3" fill="' + se.color + '"/>'; });
+    });
+    if (big) AXES.forEach(function (a, i) {
+      var p = polar(g.cx, g.cy, g.r + 19, angle(i));
+      var c = Math.cos(angle(i) * Math.PI / 180);
+      var anchor = Math.abs(c) < 0.3 ? "middle" : (c > 0 ? "start" : "end");
+      s += '<text x="' + p[0] + '" y="' + p[1] + '" text-anchor="' + anchor + '" dominant-baseline="middle" font-family="ui-rounded, system-ui, sans-serif" font-weight="700" font-size="10.5" letter-spacing="0.5" fill="#8b93a3">' + a.short.toUpperCase() + '</text>';
+    });
+    s += '</svg>';
+    return s;
+  }
+
+  var HINTS = ["Select any modality to load it here.", "Select a second modality to overlay it."];
+  var selected = ["lsfm", "sted"];
+  var cards = {};
+
+  function byId(id) { return MODALITIES.find(function (x) { return x.id === id; }); }
+
+  function toggle(id) {
+    var i = selected.indexOf(id);
+    if (i !== -1) selected.splice(i, 1);
+    else if (selected.length >= 2) selected = [selected[1], id];
+    else selected.push(id);
+    renderCompare();
+    updateSelection();
+  }
+
+  function renderCompare() {
+    var chosen = selected.map(byId);
+    document.getElementById("compareChart").innerHTML = radarSVG(chosen, true);
+
+    var info = "";
+    for (var si = 0; si < 2; si++) {
+      var w = chosen[si];
+      if (w) {
+        var rows = "";
+        Object.keys(w.specs).forEach(function (k) { rows += '<tr><td class="k">' + k + '</td><td class="v">' + w.specs[k] + '</td></tr>'; });
+        info += '<div class="slot filled" style="--c:' + w.color + '">' +
+          '<div class="mod-name">' + w.name + '</div>' +
+          '<table>' + rows + '</table></div>';
+      } else {
+        info += '<div class="slot empty"><div class="slot-label">Modality ' + (si + 1) + '</div><div class="slot-hint">' + HINTS[si] + '</div></div>';
+      }
+    }
+    document.getElementById("compareInfo").innerHTML = info;
+  }
+
+  function updateSelection() {
+    MODALITIES.forEach(function (w) {
+      cards[w.id].classList.toggle("sel", selected.indexOf(w.id) !== -1);
+    });
+  }
+
+  function buildCards() {
+    var grid = document.getElementById("cardGrid");
+    MODALITIES.forEach(function (w) {
+      var card = document.createElement("div");
+      card.className = "card";
+      card.style.setProperty("--c", w.color);
+      card.innerHTML =
+        '<div class="card-name">' + w.short + '</div>' +
+        '<div class="chart-mini">' + radarSVG([w], false) + '</div>';
+      card.addEventListener("click", function () { toggle(w.id); });
+      cards[w.id] = card;
+      grid.appendChild(card);
+    });
+  }
+
+  buildCards();
+  renderCompare();
+  updateSelection();
+})();
+</script>
+</body>
+</html>
