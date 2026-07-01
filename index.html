@@ -20,10 +20,13 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; }
   body { background: var(--bg); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
-  .wrap { max-width: 1040px; margin: 0 auto; padding: 14px; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 14px; }
+
+  /* Side-by-side layout: comparer on the left, cards on the right */
+  .layout { display: flex; gap: 20px; align-items: stretch; }
 
   /* Comparison tool */
-  .panel { background: #fff; border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--sh); padding: 18px; margin-bottom: 20px; }
+  .panel { background: #fff; border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--sh); padding: 18px; flex: 1 1 auto; min-width: 0; }
   .panel-body { display: grid; grid-template-columns: minmax(320px, 1fr) minmax(238px, 332px); gap: 16px; align-items: center; }
   .chart-cell { min-width: 0; width: 100%; }
   #compareChart svg { display: block; }
@@ -43,14 +46,20 @@
   td.k { font-size: 10px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--mute); padding: 5px 10px 5px 0; white-space: nowrap; vertical-align: top; }
   td.v { font-size: 12.5px; color: var(--ink-soft); padding: 5px 0; line-height: 1.35; font-weight: 500; text-align: right; }
 
-  /* Modality cards */
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 14px; }
-  .card { background: #fff; border: 3px solid var(--c); border-radius: 16px; box-shadow: var(--sh); cursor: pointer; padding: 12px 13px 11px; transition: box-shadow .14s, transform .1s, background .14s; }
+  /* Modality cards: 2 columns x 4 rows, matching the panel height */
+  .grid { flex: 0 0 344px; display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(4, 1fr); gap: 12px; }
+  .card { background: #fff; border: 3px solid var(--c); border-radius: 16px; box-shadow: var(--sh); cursor: pointer; padding: 10px 12px; transition: box-shadow .14s, transform .1s, background .14s; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
   .card:hover { box-shadow: var(--sh-sel); transform: translateY(-1px); }
   .card.sel { box-shadow: var(--sh-sel); background: color-mix(in srgb, var(--c) 8%, #fff); }
-  .card-name { font-size: 13.5px; font-weight: 800; letter-spacing: -0.2px; margin-bottom: 6px; }
-  .chart-mini { width: 100%; display: block; }
+  .card-name { font-size: 13.5px; font-weight: 800; letter-spacing: -0.2px; margin-bottom: 4px; }
+  .chart-mini { flex: 1 1 auto; min-height: 0; display: flex; }
+  .chart-mini svg { width: 100%; height: 100%; }
 
+  @media (max-width: 860px) {
+    .layout { flex-direction: column; }
+    .grid { flex: 0 0 auto; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); grid-template-rows: none; }
+    .card { min-height: 150px; }
+  }
   @media (max-width: 680px) {
     .panel-body { grid-template-columns: 1fr; }
   }
@@ -59,14 +68,16 @@
 <body>
 <div class="wrap">
 
-  <div class="panel">
-    <div class="panel-body">
-      <div class="chart-cell"><div id="compareChart"></div></div>
-      <div id="compareInfo"></div>
+  <div class="layout">
+    <div class="panel">
+      <div class="panel-body">
+        <div class="chart-cell"><div id="compareChart"></div></div>
+        <div id="compareInfo"></div>
+      </div>
     </div>
-  </div>
 
-  <div class="grid" id="cardGrid"></div>
+    <div class="grid" id="cardGrid"></div>
+  </div>
 
 </div>
 
