@@ -95,28 +95,28 @@
         "Sensitivity": "sCMOS, QE ~95%",
         "Gentleness": "Low dose per plane",
         "Depth": "Thin samples only",
-        "Field of view": "Large, low-mag tiling"
+        "Field of view": "Moderate"
       }
     },
     {
       id: "sd", name: "Spinning disc confocal", short: "Spinning disc", color: "#109d63",
-      scores: { res: 6, section: 7, speed: 8, sens: 7, gentle: 8, depth: 4, fov: 5 },
+      scores: { res: 6, section: 4, speed: 8, sens: 7, gentle: 8, depth: 4, fov: 7 },
       specs: {
         "Resolution": "~250 nm (diffraction limited)",
         "Sectioning": "Good — pinhole array",
-        "Speed": "Fast live volumes",
+        "Speed": "Fast, camera-based",
         "Sensitivity": "sCMOS, slight pinhole loss",
         "Gentleness": "Low dose, efficient",
         "Depth": "Moderate in thick tissue",
-        "Field of view": "Moderate field"
+        "Field of view": "Moderate"
       }
     },
     {
       id: "pc", name: "Point-scanning confocal", short: "Point confocal", color: "#7b3fe4",
-      scores: { res: 6, section: 9, speed: 3, sens: 5, gentle: 3, depth: 5, fov: 5 },
+      scores: { res: 6, section: 6, speed: 3, sens: 5, gentle: 3, depth: 5, fov: 4 },
       specs: {
-        "Resolution": "~200 nm; tunable pinhole",
-        "Sectioning": "Excellent — tight pinhole",
+        "Resolution": "~200 nm",
+        "Sectioning": "Excellent — tunable pinhole",
         "Speed": "Galvo; slow (resonant faster)",
         "Sensitivity": "PMT / HyD, pinhole losses",
         "Gentleness": "High peak-intensity dwell",
@@ -126,7 +126,7 @@
     },
     {
       id: "mp", name: "Multiphoton (two-photon)", short: "Multiphoton", color: "#0aa6b8",
-      scores: { res: 4, section: 8, speed: 3, sens: 5, gentle: 5, depth: 9, fov: 5 },
+      scores: { res: 5, section: 5, speed: 3, sens: 6, gentle: 5, depth: 9, fov: 5 },
       specs: {
         "Resolution": "~400–500 nm (long-λ excitation)",
         "Sectioning": "Intrinsic; broader axial PSF",
@@ -139,7 +139,7 @@
     },
     {
       id: "sted", name: "STED super-resolution", short: "STED", color: "#d92b86",
-      scores: { res: 10, section: 8, speed: 3, sens: 4, gentle: 2, depth: 3, fov: 3 },
+      scores: { res: 10, section: 9, speed: 3, sens: 4, gentle: 2, depth: 3, fov: 2 },
       specs: {
         "Resolution": "30–70 nm (sub-diffraction)",
         "Sectioning": "Excellent",
@@ -151,11 +151,11 @@
       }
     },
     {
-      id: "lsfm", name: "Lightsheet (cleared / live)", short: "Lightsheet", color: "#ef8a07",
-      scores: { res: 5, section: 9, speed: 9, sens: 9, gentle: 10, depth: 7, fov: 9 },
+      id: "lsfm", name: "Lightsheet (CTLS)", short: "Lightsheet", color: "#ef8a07",
+      scores: { res: 4, section: 4, speed: 9, sens: 9, gentle: 10, depth: 7, fov: 10 },
       specs: {
         "Resolution": "~300–500 nm (objective dep.)",
-        "Sectioning": "Excellent — plane illumination",
+        "Sectioning": "Good — plane illumination",
         "Speed": "Fast large volumes",
         "Sensitivity": "Very low background",
         "Gentleness": "Only focal plane lit — gentlest",
@@ -165,7 +165,7 @@
     },
     {
       id: "lls", name: "Lattice lightsheet (3i)", short: "Lattice lightsheet", color: "#4f46e5",
-      scores: { res: 5, section: 10, speed: 9, sens: 9, gentle: 10, depth: 2, fov: 3 },
+      scores: { res: 6, section: 7, speed: 9, sens: 9, gentle: 10, depth: 2, fov: 3 },
       specs: {
         "Resolution": "~230–300 nm (diffraction limited)",
         "Sectioning": "Exceptional — thinnest sheet",
@@ -225,7 +225,7 @@
   }
 
   var HINTS = ["Select any modality to load it here.", "Select a second modality to overlay it."];
-  var selected = ["lsfm", "sted"];
+  var selected = [];
   var cards = {};
 
   function byId(id) { return MODALITIES.find(function (x) { return x.id === id; }); }
