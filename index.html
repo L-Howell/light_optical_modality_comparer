@@ -20,18 +20,18 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; }
   body { background: var(--bg); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
-  .wrap { max-width: 1240px; margin: 0 auto; padding: 14px; }
+  .wrap { max-width: 1360px; margin: 0 auto; padding: 14px; }
 
   /* Side-by-side layout: comparer on the left, cards on the right */
   .layout { display: flex; gap: 20px; align-items: stretch; }
 
   /* Comparison tool */
   .panel { background: #fff; border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--sh); padding: 18px; flex: 1 1 auto; min-width: 0; }
-  .panel-body { display: grid; grid-template-columns: minmax(320px, 1fr) minmax(238px, 332px); gap: 16px; align-items: center; }
+  .panel-body { display: grid; grid-template-columns: minmax(320px, 1fr) minmax(300px, 330px); gap: 16px; align-items: center; }
   .chart-cell { min-width: 0; width: 100%; }
   #compareChart svg { display: block; }
 
-  .slot { border-radius: 16px; height: 274px; overflow: hidden; padding: 15px 17px; }
+  .slot { border-radius: 16px; height: 280px; overflow: hidden; padding: 15px 17px; }
   .slot + .slot { margin-top: 13px; }
   .slot.filled { background: var(--fill); border: 3px solid var(--c); }
   .slot.empty { background: var(--fill-empty); border: 1px dashed #d7dce6; display: flex; flex-direction: column; justify-content: center; }
@@ -49,14 +49,14 @@
   /* Modality cards: 2 columns x 4 rows, matching the panel height.
      The wrapper stretches to the panel height; the grid fills it absolutely
      so the cards never dictate the layout height. */
-  .grid-wrap { flex: 0 0 320px; position: relative; min-width: 0; }
+  .grid-wrap { flex: 0 0 300px; position: relative; min-width: 0; }
   .grid { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(4, 1fr); gap: 12px; }
-  .card { background: #fff; border: 3px solid var(--c); border-radius: 16px; box-shadow: var(--sh); cursor: pointer; padding: 10px 12px; transition: box-shadow .14s, transform .1s, background .14s; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+  .card { background: #fff; border: 3px solid var(--c); border-radius: 16px; box-shadow: var(--sh); cursor: pointer; padding: 9px 11px; transition: box-shadow .14s, transform .1s, background .14s; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
   .card:hover { box-shadow: var(--sh-sel); transform: translateY(-1px); }
   .card.sel { box-shadow: var(--sh-sel); background: color-mix(in srgb, var(--c) 8%, #fff); }
-  .card-name { font-size: 13.5px; font-weight: 800; letter-spacing: -0.2px; margin-bottom: 4px; }
-  .chart-mini { flex: 1 1 auto; min-height: 0; display: flex; }
-  .chart-mini svg { width: 100%; height: 100%; }
+  .card-name { font-size: 12.5px; font-weight: 800; letter-spacing: -0.2px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 0 0 auto; }
+  .chart-mini { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
+  .chart-mini svg { display: block; width: 100%; height: auto; max-height: 100%; }
 
   @media (max-width: 860px) {
     .layout { flex-direction: column; }
