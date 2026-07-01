@@ -46,8 +46,11 @@
   td.k { font-size: 10px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--mute); padding: 5px 10px 5px 0; white-space: nowrap; vertical-align: top; }
   td.v { font-size: 12.5px; color: var(--ink-soft); padding: 5px 0; line-height: 1.35; font-weight: 500; text-align: right; }
 
-  /* Modality cards: 2 columns x 4 rows, matching the panel height */
-  .grid { flex: 0 0 344px; display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(4, 1fr); gap: 12px; }
+  /* Modality cards: 2 columns x 4 rows, matching the panel height.
+     The wrapper stretches to the panel height; the grid fills it absolutely
+     so the cards never dictate the layout height. */
+  .grid-wrap { flex: 0 0 320px; position: relative; min-width: 0; }
+  .grid { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(4, 1fr); gap: 12px; }
   .card { background: #fff; border: 3px solid var(--c); border-radius: 16px; box-shadow: var(--sh); cursor: pointer; padding: 10px 12px; transition: box-shadow .14s, transform .1s, background .14s; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
   .card:hover { box-shadow: var(--sh-sel); transform: translateY(-1px); }
   .card.sel { box-shadow: var(--sh-sel); background: color-mix(in srgb, var(--c) 8%, #fff); }
@@ -57,7 +60,8 @@
 
   @media (max-width: 860px) {
     .layout { flex-direction: column; }
-    .grid { flex: 0 0 auto; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); grid-template-rows: none; }
+    .grid-wrap { flex: 0 0 auto; position: static; }
+    .grid { position: static; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); grid-template-rows: none; }
     .card { min-height: 150px; }
   }
   @media (max-width: 680px) {
@@ -76,7 +80,9 @@
       </div>
     </div>
 
-    <div class="grid" id="cardGrid"></div>
+    <div class="grid-wrap">
+      <div class="grid" id="cardGrid"></div>
+    </div>
   </div>
 
 </div>
